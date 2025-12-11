@@ -67,6 +67,8 @@ def load_vehicle_config(path: Path) -> Tuple[VehicleConfig, List[RotorModel]]:
             k_thrust=float(entry["k_thrust"]),
             k_drag=float(entry["k_drag"]),
             spin_dir=int(entry.get("spin_dir", 1)),
+            rotor_inertia=float(entry.get("rotor_inertia", 0.0)),
+            tilt_thrust_power=float(entry.get("tilt_thrust_power", 0.0)),
         )
         rotors.append(RotorModel(cfg))
 

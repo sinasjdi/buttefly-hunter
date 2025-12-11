@@ -34,6 +34,8 @@ class RotorConfig:
     k_thrust: float
     k_drag: float
     spin_dir: int = 1  # +1 or -1
+    rotor_inertia: float = 0.0  # around rotor +Z axis
+    tilt_thrust_power: float = 0.0  # 0 -> no tilt coupling, 1 -> scale thrust by cos(tilt)
 
     def tilt_axes(self) -> List[np.ndarray]:
         if self.tilt_axes_rotor is not None:
@@ -59,13 +61,21 @@ class RotorModel:
             R = axis_angle_to_rotmat(ax_bl, ang) @ R
         return R
 
-    def thrust_and_torque_body(self, omega: float, servo_angles: Sequence[float]):
+    def thrust_and_torque_body(self, omega: float, servo_angles: Sequence[float], w_body: np.ndarray | None = None):
         R = self.rotation_body_from_servos(servo_angles)
-        thrust_rotor = np.array([0.0, 0.0, self.config.k_thrust * omega * omega])
+        rotor_axis_body = R @ np.array([0.0, 0.0, 1.0])
+        tilt_cos = max(0.0, rotor_axis_body[2])
+        tilt_scale = tilt_cos ** self.config.tilt_thrust_power if self.config.tilt_thrust_power > 0.0 else 1.0
+        thrust_mag = self.config.k_thrust * omega * omega * tilt_scale
+        thrust_rotor = np.array([0.0, 0.0, thrust_mag])
         F_body = R @ thrust_rotor
         torque_drag_body = R @ np.array([0.0, 0.0, self.config.k_drag * omega * omega * self.config.spin_dir])
+        tau_gyro = np.zeros(3)
+        if w_body is not None and self.config.rotor_inertia > 0.0:
+            # Gyroscopic torque from rotor angular momentum when body rotates.
+            tau_gyro = self.config.rotor_inertia * omega * np.cross(w_body, rotor_axis_body)
         torque_arm = np.cross(self.config.position_baselink, F_body)
-        tau_body = torque_arm + torque_drag_body
+        tau_body = torque_arm + torque_drag_body + tau_gyro
         return F_body, tau_body, R
 
 
@@ -103,6 +113,8 @@ def rotors_from_config(path: Path) -> List[RotorModel]:
         k_thrust = float(entry["k_thrust"])
         k_drag = float(entry["k_drag"])
         spin_dir = int(entry.get("spin_dir", 1))
+        rotor_inertia = float(entry.get("rotor_inertia", 0.0))
+        tilt_thrust_power = float(entry.get("tilt_thrust_power", 0.0))
         cfg = RotorConfig(
             position_baselink=position_baselink,
             base_orientation_baselink=base_orientation_baselink,
@@ -111,6 +123,8 @@ def rotors_from_config(path: Path) -> List[RotorModel]:
             k_thrust=k_thrust,
             k_drag=k_drag,
             spin_dir=spin_dir,
+            rotor_inertia=rotor_inertia,
+            tilt_thrust_power=tilt_thrust_power,
         )
         rotors.append(RotorModel(cfg))
     return rotors

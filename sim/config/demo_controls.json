@@ -1,4 +1,9 @@
 {
+  "target_pos": [0.3, 0.2, 1.2],
+  "target_rpy_deg": [8, -2.0, 10.0],
+  "waypoints": [],
+  "loop_waypoints": false,
+
   "body": {
     "position": [0.5, 0.5, 1],
     "rpy_deg": [0, 0.0, 0.0]
