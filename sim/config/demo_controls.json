@@ -1,6 +1,6 @@
 {
-  "target_pos": [0.3, 0.2, 1.2],
-  "target_rpy_deg": [8, -2.0, 10.0],
+  "target_pos": [1, 0.2, 1.2],
+  "target_rpy_deg": [50, 20, -20.0],
   "waypoints": [],
   "loop_waypoints": false,
 
@@ -9,10 +9,10 @@
     "rpy_deg": [0, 0.0, 0.0]
   },
   "servo_angles_deg": [
-    [20.0],
-    [30.0],
-    [30.0],
-    [-10.0]
+    [0.0],
+    [0.0],
+    [0.0],
+    [0.0]
   ],
   "thrust_norm": [20, 30, 0, 10]
 }

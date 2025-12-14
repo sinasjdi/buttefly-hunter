@@ -275,7 +275,7 @@ function updateFromSnapshot(snapshot) {
 }
 
 function connectWebSocket() {
-  const ws = new WebSocket("ws://localhost:8765");
+  const ws = new WebSocket("ws://localhost:8766");
   ws.onopen = () => console.log("Connected to simulation");
   ws.onmessage = (event) => {
     try {
